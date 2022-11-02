@@ -24,6 +24,8 @@ EmbeddedFile::EmbeddedFile(
   FILE* dst = fdopen(fd, "wb");
   MULTIPY_INTERNAL_ASSERT(dst);
 
+  std::cout << "opened" << std::endl;
+
   const char* payloadStart = nullptr;
   size_t size = 0;
   // payloadSection needs to be kept to ensure the source file is still mapped.
@@ -64,10 +66,12 @@ EmbeddedFile::EmbeddedFile(
   MULTIPY_INTERNAL_ASSERT(size == written, "expected written == size");
 
   fclose(dst);
+
+  std::cout << "read" << std::endl;
 }
 
 EmbeddedFile::~EmbeddedFile() {
-  unlink(libraryName.c_str());
+  //unlink(libraryName.c_str());
 }
 
 } // namespace deploy

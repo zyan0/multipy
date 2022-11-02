@@ -21,7 +21,7 @@ message(STATUS "CMAKE_BUILD_TYPE - ${CMAKE_BUILD_TYPE}" )
 set(DEPLOY_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
 get_filename_component(MULTIPY_DIR ${CMAKE_CURRENT_SOURCE_DIR} DIRECTORY)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fabi-version=11 -fno-lto")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fabi-version=11 -fno-lto -fPIC")
 include(${DEPLOY_DIR}/utils.cmake)
 
 add_subdirectory(interpreter)
@@ -44,6 +44,7 @@ add_custom_command(
   OUTPUT libtorch_deployinterpreter.o
   # remove the DT_NEEDED entries
   COMMAND $<TARGET_FILE:remove_dt_needed> $<TARGET_FILE:torch_deployinterpreter> libtorch_deployinterpreter_all.so
+  #COMMAND cp $<TARGET_FILE:torch_deployinterpreter> libtorch_deployinterpreter_all.so
   # package the result into an object we can link into the libdeploy binary.
   COMMAND ld -r -b binary -o libtorch_deployinterpreter.o libtorch_deployinterpreter_all.so
   COMMAND objcopy --rename-section .data=.torch_deploy_payload.interpreter_all,readonly,contents -N _binary_libtorch_deployinterpreter_all_so_start -N _binary_libtorch_deployinterpreter_all_so_end libtorch_deployinterpreter.o
@@ -171,3 +172,10 @@ install (
 
 install(TARGETS torch_deploy DESTINATION dist/multipy/runtime/lib)
 install(TARGETS torch_deployinterpreter DESTINATION dist/multipy/runtime/lib)
+
+add_subdirectory(third-party/pybind11)
+pybind11_add_module(multipy_pybind pybind_init.cpp)
+target_include_directories(multipy_pybind PRIVATE ${CMAKE_SOURCE_DIR}/../..)
+target_link_libraries(multipy_pybind
+  PUBLIC "-Wl,--no-as-needed -rdynamic" dl torch_deploy_interface c10 torch_cpu torch_python
+)

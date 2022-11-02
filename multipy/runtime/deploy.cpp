@@ -232,6 +232,7 @@ Interpreter::Interpreter(
           "interpreter",
           pythonInterpreterSections,
           pythonInterpreterSymbols) {
+  std::cout << "created Interpreter" << std::endl;
   int flags = RTLD_LOCAL | RTLD_LAZY;
   if (interpreterFile_.customLoader) {
     flags |= RTLD_DEEPBIND;
